@@ -1,0 +1,26 @@
+package utils;
+
+import base.BaseTest;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+
+import java.io.File;
+import java.io.IOException;
+
+public class CaptureScreenshot {
+
+    public static String capture(String screenName) throws IOException {
+        WebDriver driver = BaseTest.getDriver();
+        if (driver == null) {
+            throw new IllegalStateException("No WebDriver instance available");
+        }
+        
+        TakesScreenshot ts = (TakesScreenshot) driver;
+        File source = ts.getScreenshotAs(OutputType.FILE);
+        File destFile = new File("screenshots/" + screenName + "_" + System.currentTimeMillis() + ".png");
+        FileUtils.copyFile(source, destFile);
+        return destFile.getAbsolutePath();
+    }
+}
