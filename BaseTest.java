@@ -1,10 +1,11 @@
 package base;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.edge.EdgeDriver;
-import org.openqa.selenium.support.FindBy;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Parameters;
@@ -17,6 +18,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class BaseTest {
+    private static final Logger logger = LogManager.getLogger(BaseTest.class);
+    
     protected WebDriver driver;
     protected DonationPage donationPage;
     protected CommanActions commanActions;
@@ -25,42 +28,64 @@ public class BaseTest {
     @Parameters("browser")
     @BeforeMethod
     public void setUp(String browseParam){
-        configProps = loadProperties();
-        String baseUrl = configProps.getProperty("base.url");
+        logger.info("Starting test setup for browser: {}", browseParam);
+        try {
+            configProps = loadProperties();
+            String baseUrl = configProps.getProperty("base.url");
+            logger.debug("Loaded config properties. Base URL: {}", baseUrl);
 
-        String browser = (browseParam != null && !browseParam.isEmpty()) ? browseParam : configProps.getProperty("browser");
-         if (browser.equalsIgnoreCase("chrome")){
-             WebDriverManager.chromedriver().setup();
-             driver = new ChromeDriver();
-         }
-         else if (browser.equalsIgnoreCase("edge")){
-             WebDriverManager.edgedriver().setup();
-             driver = new EdgeDriver();
-         }
-         else {
-             throw new IllegalArgumentException("Unsupported browser: " + browser);
-         }
-         driver.manage().window().maximize();
-         donationPage = new DonationPage(driver);
-         commanActions = new CommanActions(driver);
-         donationPage.openPage(baseUrl);
+            String browser = (browseParam != null && !browseParam.isEmpty()) ? browseParam : configProps.getProperty("browser");
+            logger.info("Selected browser: {}", browser);
+            
+            if (browser.equalsIgnoreCase("chrome")){
+                logger.debug("Setting up ChromeDriver");
+                WebDriverManager.chromedriver().setup();
+                driver = new ChromeDriver();
+            }
+            else if (browser.equalsIgnoreCase("edge")){
+                logger.debug("Setting up EdgeDriver");
+                WebDriverManager.edgedriver().setup();
+                driver = new EdgeDriver();
+            }
+            else {
+                logger.error("Unsupported browser: {}", browser);
+                throw new IllegalArgumentException("Unsupported browser: " + browser);
+            }
+            driver.manage().window().maximize();
+            logger.info("Browser window maximized");
+            
+            donationPage = new DonationPage(driver);
+            commanActions = new CommanActions(driver);
+            donationPage.openPage(baseUrl);
+            logger.info("Test setup completed successfully");
+        } catch (Exception e) {
+            logger.error("Failed during setup: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @AfterMethod
     public void tearDown(){
+        logger.info("Starting teardown");
         if(driver != null){
             driver.quit();
+            logger.debug("WebDriver quit successfully");
+        } else {
+            logger.warn("Driver was null, skipping quit");
         }
+        logger.info("Teardown completed");
     }
 
     private Properties loadProperties(){
         Properties props = new Properties();
         try{
+            logger.debug("Loading properties from: src/test/resources/config.properties");
             FileInputStream fis = new FileInputStream("src/test/resources/config.properties");
             props.load(fis);
             fis.close();
-
+            logger.debug("Properties loaded successfully");
         } catch (IOException e) {
+            logger.error("Failed to load properties: {}", e.getMessage(), e);
             throw new RuntimeException(e);
         }
         return props;
