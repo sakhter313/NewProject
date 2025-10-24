@@ -18,3 +18,16 @@ Java JDK: 17 or higher (verified with java -version).
 Maven: 3.9+ (verified with mvn -version).
 Browsers: Latest Chrome and Edge installed.
 IDE (Optional): IntelliJ IDEA, Eclipse, or VS Code for development/debugging.
+
+
+
+Technology Stack
+This project leverages the following technologies for robust, maintainable automated testing:
+Java 8: Core programming language for the framework, utilizing foundational features for compatibility with legacy environments.
+Maven: Build automation tool for dependency management, compilation, and test execution via the Surefire plugin.
+Selenium WebDriver 4.37.0: Browser automation library for interacting with web elements, supporting Chrome and Edge drivers.
+TestNG 7.11.0: Testing framework for annotations, parallel execution, and parameterized tests, enabling cross-browser runs.
+WebDriverManager 5.8.0: Automatic management of browser drivers, eliminating manual setup and ensuring version compatibility.
+Log4j2 2.25.2: Logging library for structured, thread-safe logs (console and file appenders) at DEBUG/INFO levels.
+ExtentReports 5.1.0: HTML reporting tool for interactive dashboards, including failure screenshots and test categorization.
+Apache Commons IO 2.20.0: Utility for file operations, such as screenshot capture and handling.
