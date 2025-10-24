@@ -1,0 +1,20 @@
+Overview
+This is a Maven-based Selenium WebDriver project using TestNG for automated testing of a donation page. It supports cross-browser testing (Chrome and Edge) in parallel, with comprehensive logging via Log4j2 and enhanced reporting via ExtentReports. The framework follows the Page Object Model (POM) for maintainable tests, focusing on page load verification, visual elements, and donation option interactions.
+Key tests include:
+Page load and URL validation.
+Visual verification of hero text and background image.
+Selection of one-time/monthly donation options with amounts ($50/$100).
+Features
+Cross-Browser Support: Chrome and Edge via WebDriverManager (auto-downloads drivers).
+Parallel Execution: Runs tests concurrently across browsers using TestNG.
+Logging: Structured logs with Log4j2 (console + rolling file output).
+Reporting:
+TestNG default reports (HTML summaries).
+ExtentReports for interactive dashboards with screenshots on failures.
+Waits and Actions: Explicit waits and reusable utilities for clicks, visibility checks.
+Configuration-Driven: External properties for base URL and default browser.
+Prerequisites
+Java JDK: 17 or higher (verified with java -version).
+Maven: 3.9+ (verified with mvn -version).
+Browsers: Latest Chrome and Edge installed.
+IDE (Optional): IntelliJ IDEA, Eclipse, or VS Code for development/debugging.
