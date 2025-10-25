@@ -8,53 +8,34 @@ import org.openqa.selenium.WebDriver;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Base64;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class CaptureScreenshot {
 
-    /**
-     * Original method: Captures screenshot and returns absolute file path.
-     * @param screenName Descriptive name (e.g., test method name).
-     * @return Absolute path to saved PNG file.
-     * @throws IOException If capture/save fails.
-     */
     public static String capture(String screenName) throws IOException {
         WebDriver driver = BaseTest.getDriver();
         if (driver == null) {
             throw new IllegalStateException("No WebDriver instance available");
         }
         
-        TakesScreenshot ts = (TakesScreenshot) driver;
-        File source = ts.getScreenshotAs(OutputType.FILE);
-        File destFile = new File("screenshots/" + screenName + "_" + System.currentTimeMillis() + ".png");
-        FileUtils.copyFile(source, destFile);
-        return destFile.getAbsolutePath();
-    }
-
-    /**
-     * New method: Captures screenshot, saves to screenshots/ folder, and returns Base64 for ExtentReports.
-     * Fixes broken images by embedding inline (not deprecated—standard in Selenium 4.x).
-     * @param screenName Descriptive name (e.g., test method name).
-     * @return Base64 PNG string (data:image/png;base64,...).
-     * @throws IOException If capture/save fails.
-     */
-    public static String captureAsBase64(String screenName) throws IOException {
-        WebDriver driver = BaseTest.getDriver();
-        if (driver == null) {
-            throw new IllegalStateException("No WebDriver instance available");
+        // Create screenshots directory if it doesn't exist
+        File screenshotsDir = new File("screenshots");
+        if (!screenshotsDir.exists()) {
+            screenshotsDir.mkdirs();  // Creates the directory and any necessary parent directories
         }
         
         TakesScreenshot ts = (TakesScreenshot) driver;
-        // Capture as bytes (standard Selenium 4.x method—not deprecated)
-        byte[] screenshotBytes = ts.getScreenshotAs(OutputType.BYTES);
+        File source = ts.getScreenshotAs(OutputType.FILE);
         
-        // Save to screenshots/ folder
-        File destFile = new File("screenshots/" + screenName + "_" + System.currentTimeMillis() + ".png");
-        FileUtils.writeByteArrayToFile(destFile, screenshotBytes);
+        // Use consistent timestamp format matching your report
+        String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd.HH.mm.ss"));
+        String fileName = screenName + "_" + timeStamp + ".png";
+        File destFile = new File("screenshots/" + fileName);
         
-        // Encode to Base64 (Java built-in, not deprecated)
-        String base64Image = "data:image/png;base64," + Base64.getEncoder().encodeToString(screenshotBytes);
+        FileUtils.copyFile(source, destFile);
         
-        return base64Image;
+        // Return relative path for better compatibility with ExtentReports
+        return destFile.getPath();
     }
 }
