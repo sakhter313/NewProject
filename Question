@@ -1,0 +1,60 @@
+Manual Testing Questions:
+
+Do you have any experience with test management tools such as Microsoft Azure DevOps or other similar tools?
+
+What process do you follow to report issues in Jira?
+
+What would you do if you discovered a bug on the last day of the testing cycle?
+
+How do you coordinate with the development team when you find a critical bug?
+
+If a critical bug is found on the last day of the sprint, would you recommend going ahead with the release? Why or why not?
+
+If your workday is about to end, but you receive a new build for testing that includes a reported bug fix, how would you manage the situation?
+
+
+Automation Testing questions:
+
+In the test report, one of the test cases is failing. Can you explain the specific reason for this failure?
+
+What areas of improvement do you see in the assignment that was given to you?
+
+What are the different ways you can validate or test the test data within the code?
+
+What is the process you usually follow before starting to write automation scripts? Do you also perform manual testing as part of your approach?
+
+When multiple locators are available for an element, how do you decide which one to select and what process do you follow?
+
+Have you identified any updates or improvements that could be suggested for this work? If yes, what are they, and what process would you follow to implement them?
+
+Did you know about the browser stack for mobile testing ?
+
+
+
+if you get the bug at last moment before releasing the build
+Coordinate with the Manual team if feature relased
+If script get failed what will you do
+
+Intriduction
+Techology 
+Project
+Hobbies
+
+3-4 min
+
+
+TestManagement Tool
+BUg Reporting(Basis of Priority)
+Member
+
+Automation task Assignment
+Process of project
+Sprint Cycle
+
+Properties
+Headless
+Differemt types of framework
+OOPS in Project
+
+Failed Test Case in project
+Locator
