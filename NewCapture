@@ -1,0 +1,40 @@
+package utils;
+
+import base.BaseTest;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Base64;
+
+public class CaptureScreenshot {
+
+    /**
+     * Captures screenshot as Base64 string for ExtentReports embedding and saves to screenshots/ folder.
+     * @param screenName Descriptive name for the screenshot (e.g., test method name).
+     * @return Base64-encoded PNG string (format: data:image/png;base64,...).
+     * @throws IOException If capture or file save fails.
+     */
+    public static String captureAsBase64(String screenName) throws IOException {
+        WebDriver driver = BaseTest.getDriver();
+        if (driver == null) {
+            throw new IllegalStateException("No WebDriver instance available");
+        }
+        
+        TakesScreenshot ts = (TakesScreenshot) driver;
+        // Capture screenshot as bytes
+        byte[] screenshotBytes = ts.getScreenshotAs(OutputType.BYTES);
+        
+        // Save to file in screenshots/ folder
+        File destFile = new File("screenshots/" + screenName + "_" + System.currentTimeMillis() + ".png");
+        FileUtils.writeFile(destFile, screenshotBytes);
+        
+        // Encode to Base64 for ExtentReports
+        String base64Image = "data:image/png;base64," + Base64.getEncoder().encodeToString(screenshotBytes);
+        
+        return base64Image;
+    }
+}
