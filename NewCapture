@@ -13,7 +13,27 @@ import java.util.Base64;
 public class CaptureScreenshot {
 
     /**
-     * Captures screenshot, saves to screenshots/ folder, and returns Base64 for ExtentReports embedding.
+     * Original method: Captures screenshot and returns absolute file path (for file-based use).
+     * @param screenName Descriptive name (e.g., test method name).
+     * @return Absolute path to saved PNG file.
+     * @throws IOException If capture/save fails.
+     */
+    public static String capture(String screenName) throws IOException {
+        WebDriver driver = BaseTest.getDriver();
+        if (driver == null) {
+            throw new IllegalStateException("No WebDriver instance available");
+        }
+        
+        TakesScreenshot ts = (TakesScreenshot) driver;
+        File source = ts.getScreenshotAs(OutputType.FILE);
+        File destFile = new File("screenshots/" + screenName + "_" + System.currentTimeMillis() + ".png");
+        FileUtils.copyFile(source, destFile);
+        return destFile.getAbsolutePath();
+    }
+
+    /**
+     * New method: Captures screenshot, saves to screenshots/ folder, and returns Base64 for ExtentReports embedding.
+     * Use this to fix broken images in reports.
      * @param screenName Descriptive name (e.g., test method name).
      * @return Base64 PNG string (data:image/png;base64,...).
      * @throws IOException If capture/save fails.
@@ -30,7 +50,7 @@ public class CaptureScreenshot {
         
         // Save to screenshots/ (relative to project root)
         File destFile = new File("screenshots/" + screenName + "_" + System.currentTimeMillis() + ".png");
-        FileUtils.writeByteArrayToFile(destFile, screenshotBytes);  // Updated to write bytes directly
+        FileUtils.writeByteArrayToFile(destFile, screenshotBytes);
         
         // Encode to Base64
         String base64Image = "data:image/png;base64," + Base64.getEncoder().encodeToString(screenshotBytes);
