@@ -13,10 +13,10 @@ import java.util.Base64;
 public class CaptureScreenshot {
 
     /**
-     * Captures screenshot as Base64 string for ExtentReports embedding and saves to screenshots/ folder.
-     * @param screenName Descriptive name for the screenshot (e.g., test method name).
-     * @return Base64-encoded PNG string (format: data:image/png;base64,...).
-     * @throws IOException If capture or file save fails.
+     * Captures screenshot, saves to screenshots/ folder, and returns Base64 for ExtentReports embedding.
+     * @param screenName Descriptive name (e.g., test method name).
+     * @return Base64 PNG string (data:image/png;base64,...).
+     * @throws IOException If capture/save fails.
      */
     public static String captureAsBase64(String screenName) throws IOException {
         WebDriver driver = BaseTest.getDriver();
@@ -25,14 +25,14 @@ public class CaptureScreenshot {
         }
         
         TakesScreenshot ts = (TakesScreenshot) driver;
-        // Capture screenshot as bytes
+        // Capture as bytes
         byte[] screenshotBytes = ts.getScreenshotAs(OutputType.BYTES);
         
-        // Save to file in screenshots/ folder
+        // Save to screenshots/ (relative to project root)
         File destFile = new File("screenshots/" + screenName + "_" + System.currentTimeMillis() + ".png");
-        FileUtils.writeFile(destFile, screenshotBytes);
+        FileUtils.writeByteArrayToFile(destFile, screenshotBytes);  // Updated to write bytes directly
         
-        // Encode to Base64 for ExtentReports
+        // Encode to Base64
         String base64Image = "data:image/png;base64," + Base64.getEncoder().encodeToString(screenshotBytes);
         
         return base64Image;
