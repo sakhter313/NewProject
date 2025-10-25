@@ -13,7 +13,7 @@ import java.util.Base64;
 public class CaptureScreenshot {
 
     /**
-     * Original method: Captures screenshot and returns absolute file path (for file-based use).
+     * Original method: Captures screenshot and returns absolute file path.
      * @param screenName Descriptive name (e.g., test method name).
      * @return Absolute path to saved PNG file.
      * @throws IOException If capture/save fails.
@@ -32,8 +32,8 @@ public class CaptureScreenshot {
     }
 
     /**
-     * New method: Captures screenshot, saves to screenshots/ folder, and returns Base64 for ExtentReports embedding.
-     * Use this to fix broken images in reports.
+     * New method: Captures screenshot, saves to screenshots/ folder, and returns Base64 for ExtentReports.
+     * Fixes broken images by embedding inline (not deprecated—standard in Selenium 4.x).
      * @param screenName Descriptive name (e.g., test method name).
      * @return Base64 PNG string (data:image/png;base64,...).
      * @throws IOException If capture/save fails.
@@ -45,14 +45,14 @@ public class CaptureScreenshot {
         }
         
         TakesScreenshot ts = (TakesScreenshot) driver;
-        // Capture as bytes
+        // Capture as bytes (standard Selenium 4.x method—not deprecated)
         byte[] screenshotBytes = ts.getScreenshotAs(OutputType.BYTES);
         
-        // Save to screenshots/ (relative to project root)
+        // Save to screenshots/ folder
         File destFile = new File("screenshots/" + screenName + "_" + System.currentTimeMillis() + ".png");
         FileUtils.writeByteArrayToFile(destFile, screenshotBytes);
         
-        // Encode to Base64
+        // Encode to Base64 (Java built-in, not deprecated)
         String base64Image = "data:image/png;base64," + Base64.getEncoder().encodeToString(screenshotBytes);
         
         return base64Image;
