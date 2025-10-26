@@ -1,0 +1,4 @@
+java.lang.AssertionError: Page structure should remain intact after clicking One-Time donation button
+Expected :true
+Actual   :false
+<Click to see difference>
