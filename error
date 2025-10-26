@@ -1,107 +1,47 @@
-package tests;
+java.lang.AssertionError: Link did not navigate correctly: tel:18002272345
+Expected :true
+Actual   :false
+<Click to see difference>
 
-import base.BaseTest;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.NoSuchWindowException;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
-import java.time.Duration;
-import java.util.List;
+	at org.testng.Assert.fail(Assert.java:111)
+	at org.testng.Assert.failNotEquals(Assert.java:1590)
+	at org.testng.Assert.assertTrue(Assert.java:57)
+	at tests.LinkVerificationTest.testAllLinksFunctionality(LinkVerificationTest.java:64)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.testng.internal.invokers.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:141)
+	at org.testng.internal.invokers.TestInvoker.invokeMethod(TestInvoker.java:687)
+	at org.testng.internal.invokers.TestInvoker.invokeTestMethod(TestInvoker.java:230)
+	at org.testng.internal.invokers.MethodRunner.runInSequence(MethodRunner.java:63)
+	at org.testng.internal.invokers.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:995)
+	at org.testng.internal.invokers.TestInvoker.invokeTestMethods(TestInvoker.java:203)
+	at org.testng.internal.invokers.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:154)
+	at org.testng.internal.invokers.TestMethodWorker.run(TestMethodWorker.java:134)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at org.testng.TestRunner.privateRun(TestRunner.java:741)
+	at org.testng.TestRunner.run(TestRunner.java:616)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:421)
+	at org.testng.SuiteRunner$SuiteWorker.run(SuiteRunner.java:463)
+	at org.testng.internal.thread.ThreadUtil.lambda$execute$0(ThreadUtil.java:64)
+	at java.base/java.util.concurrent.FutureTask.run$$$capture(FutureTask.java:264)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java)
+	at --- Async.Stack.Trace --- (captured by IntelliJ IDEA debugger)
+	at java.base/java.util.concurrent.FutureTask.<init>(FutureTask.java:132)
+	at java.base/java.util.concurrent.AbstractExecutorService.newTaskFor(AbstractExecutorService.java:113)
+	at java.base/java.util.concurrent.AbstractExecutorService.invokeAll(AbstractExecutorService.java:274)
+	at org.testng.internal.thread.ThreadUtil.execute(ThreadUtil.java:70)
+	at org.testng.SuiteRunner.runInParallelTestMode(SuiteRunner.java:442)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:371)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:312)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:52)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:95)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1274)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1208)
+	at org.testng.TestNG.runSuites(TestNG.java:1112)
+	at org.testng.TestNG.run(TestNG.java:1079)
+	at com.intellij.rt.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:65)
+	at com.intellij.rt.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:105)
 
-public class LinkVerificationTest extends BaseTest {
-    private static final Logger logger = LogManager.getLogger(LinkVerificationTest.class);
-    private final WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-
-    @Test(priority = 3, description = "Verify all links on donation page navigate correctly and print them")
-    public void testAllLinksFunctionality() {
-        logger.info("Starting LinkVerificationTest: testAllLinksFunctionality");
-
-        // Ensure driver is not null at start
-        if (driver == null) {
-            Assert.fail("Driver is null - cannot proceed with link verification");
-            return;
-        }
-
-        // Step 1: Get all href strings (no elements – avoids staleness)
-        List<String> allHrefs = donationPage.getAllLinkHrefs();
-        logger.info("Found {} valid links to verify", allHrefs.size());
-
-        // NEW: Print all links to console/logs
-        logger.info("=== ALL LINKS FOUND ON DONATION PAGE ===");
-        for (int i = 0; i < allHrefs.size(); i++) {
-            logger.info("Link {}: {}", i + 1, allHrefs.get(i));
-        }
-        logger.info("=== END LINKS LIST ===");
-
-        Assert.assertTrue(allHrefs.size() > 0, "No valid links found on page");
-
-        String originalUrl = driver.getCurrentUrl();
-        logger.debug("Original URL: {}", originalUrl);
-
-        int successfulNavs = 0;
-        for (int i = 0; i < allHrefs.size(); i++) {
-            String href = allHrefs.get(i);
-            logger.info("Verifying link {}: {}", i + 1, href);
-
-            // Ensure driver is still valid before each iteration
-            if (driver == null) {
-                logger.error("Driver became null during test - stopping verification");
-                Assert.fail("Driver became null during link verification");
-                return;
-            }
-
-            try {
-                // Step 2: Navigate directly to href (simulates click, no stale element)
-                driver.get(href);
-
-                // Step 3: Verify navigation (e.g., new URL is not original, and loads without error)
-                String newUrl = driver.getCurrentUrl();
-                boolean navigated = !newUrl.equals(originalUrl) && newUrl.contains("cancer.org"); // Adjust domain if needed
-                Assert.assertTrue(navigated, "Link did not navigate correctly: " + href);
-
-                logger.debug("Successful navigation to: {}", newUrl);
-                successfulNavs++;
-
-                // Step 4: Navigate back to donation page for next link
-                driver.navigate().back();
-                wait.until(ExpectedConditions.urlToBe(originalUrl)); // Wait for back to complete
-
-            } catch (NoSuchWindowException | org.openqa.selenium.TimeoutException e) {
-                logger.warn("Navigation failed for {} (external/JS link?): {}", href, e.getMessage());
-                // Continue to next link – don't fail test for non-internal links
-                try {
-                    driver.get(originalUrl); // Reset to original
-                } catch (Exception resetE) {
-                    logger.error("Failed to reset to original URL after error: {}", resetE.getMessage());
-                    // Skip remaining links if driver is compromised
-                    break;
-                }
-            } catch (Exception e) {
-                logger.error("Unexpected error for link {}: {}", href, e.getMessage());
-                // Don't fail the entire test on single link error – continue
-                // But log and skip reset if driver is null
-                if (driver != null) {
-                    try {
-                        driver.get(originalUrl);
-                    } catch (Exception resetE) {
-                        logger.error("Failed to reset after unexpected error: {}", resetE.getMessage());
-                        break; // Stop if reset fails
-                    }
-                } else {
-                    logger.error("Driver is null after error – stopping test");
-                    break;
-                }
-            }
-        }
-
-        // Step 5: Final assertion on success rate (allow 80%+ for external links)
-        double successRate = (double) successfulNavs / allHrefs.size();
-        Assert.assertTrue(successRate >= 0.8, "Success rate too low: " + successRate + " (" + successfulNavs + "/" + allHrefs.size() + ")");
-
-        logger.info("LinkVerificationTest completed: {} successful out of {}", successfulNavs, allHrefs.size());
-    }
-}
