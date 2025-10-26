@@ -21,59 +21,46 @@ public class DonationPageButtonTest extends BaseTest {
     }
 
     @Test(priority = 3)
+    public void testAmount25Button() {
+        donationPage.selectAmount("25");
+        Assert.assertTrue(donationPage.isPageStructureIntact(),
+                "Page structure should remain intact after clicking $25 button");
+        Assert.assertTrue(donationPage.isOnlyOneAmountSelected(),
+                "Only one amount button should be selected after clicking $25");
+    }
+
+    @Test(priority = 4)
     public void testAmount50Button() {
         donationPage.selectAmount("50");
         Assert.assertTrue(donationPage.isPageStructureIntact(),
                 "Page structure should remain intact after clicking $50 button");
+        Assert.assertTrue(donationPage.isOnlyOneAmountSelected(),
+                "Only one amount button should be selected after clicking $50");
     }
 
-    @Test(priority = 4)
+    @Test(priority = 5)
     public void testAmount100Button() {
         donationPage.selectAmount("100");
         Assert.assertTrue(donationPage.isPageStructureIntact(),
                 "Page structure should remain intact after clicking $100 button");
-    }
-
-    @Test(priority = 5)
-    public void testAmount250Button() {
-        donationPage.selectAmount("250");
-        Assert.assertTrue(donationPage.isPageStructureIntact(),
-                "Page structure should remain intact after clicking $250 button");
+        Assert.assertTrue(donationPage.isOnlyOneAmountSelected(),
+                "Only one amount button should be selected after clicking $100");
     }
 
     @Test(priority = 6)
-    public void testAmount500Button() {
-        donationPage.selectAmount("500");
-        Assert.assertTrue(donationPage.isPageStructureIntact(),
-                "Page structure should remain intact after clicking $500 button");
-    }
-
-    @Test(priority = 7)
-    public void testAmount1000Button() {
-        donationPage.selectAmount("1000");
-        Assert.assertTrue(donationPage.isPageStructureIntact(),
-                "Page structure should remain intact after clicking $1,000 button");
-    }
-
-    @Test(priority = 8)
-    public void testAmount2500Button() {
-        donationPage.selectAmount("2500");
-        Assert.assertTrue(donationPage.isPageStructureIntact(),
-                "Page structure should remain intact after clicking $2,500 button");
-    }
-
-    @Test(priority = 9)
     public void testCustomAmount() {
         donationPage.enterCustomAmount("150");
         Assert.assertTrue(donationPage.isPageStructureIntact(),
                 "Page structure should remain intact after entering custom amount $150");
     }
 
-    @Test(priority = 10)
+    @Test(priority = 7)
     public void testContinueButtonWithValidSelection() {
-        // Setup: One-time + $50
+        // Setup: One-time + $50 (ensures single selection)
         donationPage.selectOneTimeDonation();
         donationPage.selectAmount("50");
+        Assert.assertTrue(donationPage.isOnlyOneAmountSelected(),
+                "Only one amount should be selected before Continue");
         donationPage.clickContinue();
 
         String currentUrl = driver.getCurrentUrl();
@@ -81,45 +68,45 @@ public class DonationPageButtonTest extends BaseTest {
 
         Assert.assertTrue(
             currentUrl.contains("step") || !currentUrl.equals(baseUrl),
-            "Should navigate to next step (URL contains 'step' or changes) after clicking Continue"
+            "Should navigate to next step after clicking Continue"
         );
     }
 
-    @Test(priority = 11)
+    @Test(priority = 8)
     public void testBackButton() {
         try {
             donationPage.clickBack();
             Assert.assertTrue(donationPage.isPageStructureIntact(),
                     "Page structure should remain intact after clicking Back button");
         } catch (Exception e) {
-            Assert.assertTrue(true, "Back button not present on current step, skipping test");
+            Assert.assertTrue(true, "Back button not present, skipping test");
         }
     }
 
-    @Test(priority = 12)
+    @Test(priority = 9)
     public void testCancelButton() {
         try {
             donationPage.clickCancel();
             String currentUrl = driver.getCurrentUrl();
             Assert.assertFalse(currentUrl.contains("step"),
-                    "Should exit flow or stay on base page after clicking Cancel");
+                    "Should return to base after clicking Cancel");
         } catch (Exception e) {
             Assert.assertTrue(true, "Cancel button not present, skipping test");
         }
     }
 
-    @Test(priority = 13)
+    @Test(priority = 10)
     public void testShareButton() {
         try {
-            donationPage.clickShareButton(0); // First share icon
+            donationPage.clickShareButton(0);
             Assert.assertTrue(donationPage.isPageStructureIntact(),
                     "Page structure should remain intact after clicking Share button");
         } catch (Exception e) {
-            Assert.assertTrue(true, "No share buttons found, skipping test");
+            Assert.assertTrue(true, "No share buttons present, skipping test");
         }
     }
 
-    @Test(priority = 14)
+    @Test(priority = 11)
     public void testLearnMoreButton() {
         try {
             donationPage.clickLearnMore();
@@ -128,5 +115,20 @@ public class DonationPageButtonTest extends BaseTest {
         } catch (Exception e) {
             Assert.assertTrue(true, "Learn More button not present, skipping test");
         }
+    }
+
+    @Test(priority = 12)
+    public void testSingleAmountSelectionAcrossModes() {
+        // Test single selection works across modes
+        donationPage.selectOneTimeDonation();
+        donationPage.selectAmount("50");  // Select in One-Time
+        Assert.assertTrue(donationPage.isOnlyOneAmountSelected(), "Single selection in One-Time mode");
+
+        donationPage.selectMonthlyDonation();  // Switch mode
+        Assert.assertTrue(donationPage.isPageStructureIntact(), "Structure intact after mode switch");
+        Assert.assertFalse(donationPage.isOnlyOneAmountSelected(), "No selection after mode switch (expected)");
+
+        donationPage.selectAmount("100");  // Select in Monthly
+        Assert.assertTrue(donationPage.isOnlyOneAmountSelected(), "Single selection in Monthly mode");
     }
 }
