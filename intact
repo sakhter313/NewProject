@@ -1,0 +1,68 @@
+public boolean isPageStructureIntact() {
+    logger.info("Checking if donation page structure is intact (mode-aware)");
+
+    try {
+        // Always required
+        boolean core = commanActions.isElementDisplayed(oneTimeOption) &&
+                       commanActions.isElementDisplayed(monthlyOption) &&
+                       commanActions.isElementDisplayed(continueButton);
+
+        if (!core) {
+            logger.warn("Core elements missing: oneTimeOption, monthlyOption, or continueButton");
+            return false;
+        }
+
+        // Determine current mode
+        boolean isOneTimeSelected = isOneTimeSelected();
+        boolean isMonthlySelected = isMonthlySelected();
+
+        logger.info("Current mode: One-Time={}, Monthly={}", isOneTimeSelected, isMonthlySelected);
+
+        // Define amounts per mode (based on live site)
+        List<WebElement> expectedAmounts;
+        if (isOneTimeSelected) {
+            expectedAmounts = List.of(amount25Button, amount50Button, amount100Button, amount250Button);
+        } else if (isMonthlySelected) {
+            expectedAmounts = List.of(amount25Button, amount50Button, amount100Button, amount250Button,
+                                      amount500Button, amount1000Button, amount2500Button, amount5000Button);
+        } else {
+            // Default: check only common amounts
+            expectedAmounts = List.of(amount25Button, amount50Button, amount100Button, amount250Button);
+        }
+
+        // Check only the amounts that should be visible
+        boolean amountsVisible = expectedAmounts.stream()
+                .allMatch(commanActions::isElementDisplayed);
+
+        boolean result = core && amountsVisible;
+        logger.info("Page structure check: {}", result ? "Intact" : "Broken");
+        return result;
+
+    } catch (Exception e) {
+        logger.warn("Exception during structure check: {}", e.getMessage());
+        return false;
+    }
+}
+
+// Helper methods to detect current mode
+private boolean isOneTimeSelected() {
+    try {
+        String classAttr = oneTimeOption.getAttribute("class");
+        String ariaSelected = oneTimeOption.getAttribute("aria-selected");
+        return (classAttr != null && classAttr.contains("selected")) ||
+               "true".equalsIgnoreCase(ariaSelected);
+    } catch (Exception e) {
+        return false;
+    }
+}
+
+private boolean isMonthlySelected() {
+    try {
+        String classAttr = monthlyOption.getAttribute("class");
+        String ariaSelected = monthlyOption.getAttribute("aria-selected");
+        return (classAttr != null && classAttr.contains("selected")) ||
+               "true".equalsIgnoreCase(ariaSelected);
+    } catch (Exception e) {
+        return false;
+    }
+}
