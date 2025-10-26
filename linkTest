@@ -1,0 +1,43 @@
+package tests;
+
+import base.BaseTest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import java.util.List;
+
+public class LinkVerificationTest extends BaseTest {
+    private static final Logger logger = LogManager.getLogger(LinkVerificationTest.class);
+
+    @Test(priority = 2, description = "Verify all links on donation page are clickable and navigate correctly")
+    public void testAllLinksFunctionality() {
+        logger.info("Starting LinkVerificationTest: testAllLinksFunctionality");
+
+        // Open donation page
+        donationPage.openPage(configProps.getProperty("base.url"));
+
+        // Get all links
+        List<WebElement> links = donationPage.getAllLinks();
+        logger.info("Found {} valid links to verify", links.size());
+
+        int validLinks = 0;
+
+        for (WebElement link : links) {
+            String href = link.getAttribute("href");
+            logger.debug("Testing link: {}", href);
+            boolean isValid = donationPage.verifyLinkNavigation(link);
+            if (isValid) {
+                validLinks++;
+                logger.info("Link verified successfully: {}", href);
+            } else {
+                logger.warn("Link failed verification: {}", href);
+            }
+        }
+
+        logger.info("Verified {} out of {} links successfully", validLinks, links.size());
+        Assert.assertTrue(validLinks > 0, "No valid links found or all links failed");
+        Assert.assertTrue(validLinks == links.size(), "Some links failed verification");
+    }
+}
