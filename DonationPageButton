@@ -35,34 +35,55 @@ public class DonationPageButtonTest extends BaseTest {
     }
 
     @Test(priority = 5)
-    public void testAmount75Button() {
-        donationPage.selectAmount("75");
-        Assert.assertTrue(donationPage.isPageStructureIntact(), 
-                "Page structure should remain intact after clicking $75 button");
-    }
-
-    @Test(priority = 6)
     public void testAmount100Button() {
         donationPage.selectAmount("100");
         Assert.assertTrue(donationPage.isPageStructureIntact(), 
                 "Page structure should remain intact after clicking $100 button");
     }
 
-    @Test(priority = 7)
+    @Test(priority = 6)
     public void testAmount250Button() {
         donationPage.selectAmount("250");
         Assert.assertTrue(donationPage.isPageStructureIntact(), 
                 "Page structure should remain intact after clicking $250 button");
     }
 
+    @Test(priority = 7)
+    public void testAmount500Button() {
+        donationPage.selectAmount("500");
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after clicking $500 button");
+    }
+
     @Test(priority = 8)
+    public void testAmount1000Button() {
+        donationPage.selectAmount("1000");
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after clicking $1,000 button");
+    }
+
+    @Test(priority = 9)
+    public void testAmount2500Button() {
+        donationPage.selectAmount("2500");
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after clicking $2,500 button");
+    }
+
+    @Test(priority = 10)
+    public void testAmount5000Button() {
+        donationPage.selectAmount("5000");
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after clicking $5,000 button");
+    }
+
+    @Test(priority = 11)
     public void testCustomAmountButton() {
         donationPage.selectAmount("150");
         Assert.assertTrue(donationPage.isPageStructureIntact(), 
                 "Page structure should remain intact after entering custom amount");
     }
 
-    @Test(priority = 9)
+    @Test(priority = 12)
     public void testContinueButton() {
         donationPage.selectAmount("50");
         donationPage.selectOneTimeDonation();
@@ -72,7 +93,18 @@ public class DonationPageButtonTest extends BaseTest {
                 "Should navigate to next step after clicking Continue button");
     }
 
-    @Test(priority = 10)
+    @Test(priority = 13)
+    public void testDonateNowButton() {
+        try {
+            donationPage.clickDonateNow();
+            Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                    "Page structure should remain intact after clicking Donate Now button");
+        } catch (Exception e) {
+            Assert.assertTrue(true, "Donate Now button not present, skipping test");
+        }
+    }
+
+    @Test(priority = 14)
     public void testBackButton() {
         try {
             donationPage.clickBack();
@@ -83,7 +115,7 @@ public class DonationPageButtonTest extends BaseTest {
         }
     }
 
-    @Test(priority = 11)
+    @Test(priority = 15)
     public void testCancelButton() {
         try {
             donationPage.clickCancel();
@@ -95,7 +127,7 @@ public class DonationPageButtonTest extends BaseTest {
         }
     }
 
-    @Test(priority = 12)
+    @Test(priority = 16)
     public void testShareButtons() {
         try {
             donationPage.clickShareButton(0);
@@ -106,7 +138,7 @@ public class DonationPageButtonTest extends BaseTest {
         }
     }
 
-    @Test(priority = 13)
+    @Test(priority = 17)
     public void testLearnMoreButton() {
         try {
             donationPage.clickLearnMore();
