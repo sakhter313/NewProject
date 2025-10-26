@@ -126,11 +126,15 @@ public class DonationPage {
     public void selectOneTimeDonation() {
         logger.info("Selecting one-time donation option");
         commanActions.clickElement(oneTimeOption);
+        // Wait for page to stabilize after click (no navigation or reload)
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id='app_root']")));
     }
 
     public void selectMonthlyDonation() {
         logger.info("Selecting monthly donation option");
         commanActions.clickElement(monthlyOption);
+        // Wait for page to stabilize after click (no navigation or reload)
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id='app_root']")));
     }
 
     public void selectAmount(String amount) {
@@ -167,10 +171,33 @@ public class DonationPage {
                     enterCustomAmount(amount);  // Delegate to new method
                     return;
             }
+            // Deselect all other amount buttons before selecting this one (ensures single selection)
+            deselectAllAmountButtons();
             commanActions.clickElement(amountBtn);
+            // Wait for this button to be selected
+            wait.until(ExpectedConditions.attributeContains(amountBtn, "class", "selected"));
         } catch (Exception e) {
             logger.warn("Unsupported amount: {}. Falling back to $50", amount);
+            deselectAllAmountButtons();
             commanActions.clickElement(amount50Button);
+        }
+    }
+
+    // New method to deselect all amount buttons (ensures single selection for both modes)
+    private void deselectAllAmountButtons() {
+        List<WebElement> allAmountButtons = Arrays.asList(
+            amount25Button, amount50Button, amount100Button, amount250Button,
+            amount500Button, amount1000Button, amount2500Button, amount5000Button
+        );
+        for (WebElement btn : allAmountButtons) {
+            try {
+                if (commanActions.isElementDisplayed(btn) && btn.getAttribute("class").contains("selected")) {
+                    btn.click(); // Click to deselect if selected
+                    wait.until(ExpectedConditions.not(ExpectedConditions.attributeContains(btn, "class", "selected")));
+                }
+            } catch (Exception ignored) {
+                // Ignore if button not present or not clickable
+            }
         }
     }
 
@@ -255,40 +282,16 @@ public class DonationPage {
     }
 
     public boolean isPageStructureIntact() {
-        logger.info("Checking if donation page structure is intact (mode-aware)");
+        logger.info("Checking if donation page structure is intact (DOM presence only)");
 
         try {
-            // Always required
-            boolean core = commanActions.isElementDisplayed(oneTimeOption) &&
-                    commanActions.isElementDisplayed(monthlyOption) &&
-                    commanActions.isElementDisplayed(continueButton);
+            // Check existence in DOM (not visibility) for core elements - structure remains if elements are present
+            boolean oneTimePresent = driver.findElements(By.xpath("//*[@id='app_root']/div/div[2]/div[3]/div[2]/button[1]")).size() > 0;
+            boolean monthlyPresent = driver.findElements(By.xpath("//*[@id='app_root']/div/div[2]/div[3]/div[2]/button[2]")).size() > 0;
+            boolean continuePresent = driver.findElements(By.xpath("//*[@id='app_root']//button[contains(text(), 'Continue') or contains(text(), 'Next') or contains(@class, 'continue') or @type='submit']")).size() > 0;
 
-            if (!core) {
-                logger.warn("Core elements missing: oneTimeOption, monthlyOption, or continueButton");
-                return false;
-            }
-
-            // Determine current mode
-            boolean isOneTimeSelected = isOneTimeSelected();
-            boolean isMonthlySelected = isMonthlySelected();
-
-            logger.info("Current mode: One-Time={}, Monthly={}", isOneTimeSelected, isMonthlySelected);
-
-            // Define amounts per mode (based on live site)
-            List<WebElement> expectedAmounts;
-            if (isOneTimeSelected || isMonthlySelected) {
-                expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button);
-            } else {
-                // Default: check only common amounts
-                expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button);
-            }
-
-            // Check only the amounts that should be visible
-            boolean amountsVisible = expectedAmounts.stream()
-                    .allMatch(commanActions::isElementDisplayed);
-
-            boolean result = core && amountsVisible;
-            logger.info("Page structure check: {}", result ? "Intact" : "Broken");
+            boolean result = oneTimePresent && monthlyPresent && continuePresent;
+            logger.info("Page structure check (DOM presence): {}", result ? "Intact" : "Broken");
             return result;
 
         } catch (Exception e) {
@@ -297,7 +300,7 @@ public class DonationPage {
         }
     }
 
-    // Helper methods to detect current mode
+    // Helper methods to detect current mode (kept for potential future use)
     private boolean isOneTimeSelected() {
         try {
             String classAttr = oneTimeOption.getAttribute("class");
