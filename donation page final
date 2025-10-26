@@ -2,6 +2,7 @@ package pages;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -44,22 +45,28 @@ public class DonationPage {
     @FindBy(xpath = "//a[@href]")
     private List<WebElement> allLinks;
 
-    // New: Additional amount buttons
+    // New: Additional amount buttons (based on site analysis: no $75; added $25, $250, $500, $1000, $2500, $5000)
     @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$25') or @value='25' or contains(@class, 'amount-25')]")
     private WebElement amount25Button;
-
-    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$75') or @value='75' or contains(@class, 'amount-75')]")
-    private WebElement amount75Button;
 
     @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$250') or @value='250' or contains(@class, 'amount-250')]")
     private WebElement amount250Button;
 
-    // New: Custom amount input and submit button
-    @FindBy(xpath = "//*[@id='app_root']//input[@type='number' or contains(@class, 'custom-amount')]")
-    private WebElement customAmountField;
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$500') or @value='500' or contains(@class, 'amount-500')]")
+    private WebElement amount500Button;
 
-    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Custom Amount') or contains(@class, 'custom-amount-submit') or contains(@class, 'custom')]")
-    private WebElement customAmountSubmitButton;
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$1,000') or @value='1000' or contains(@class, 'amount-1000')]")
+    private WebElement amount1000Button;
+
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$2,500') or @value='2500' or contains(@class, 'amount-2500')]")
+    private WebElement amount2500Button;
+
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$5,000') or @value='5000' or contains(@class, 'amount-5000')]")
+    private WebElement amount5000Button;
+
+    // New: Custom amount input (no separate submit; uses Continue)
+    @FindBy(xpath = "//*[@id='app_root']//input[@type='number' or @id='amount' or contains(@class, 'custom-amount')]")
+    private WebElement customAmountField;
 
     // New: Navigation buttons
     @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Continue') or contains(text(), 'Next') or contains(@class, 'continue') or @type='submit']")
@@ -71,13 +78,16 @@ public class DonationPage {
     @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Cancel') or contains(@class, 'cancel')]")
     private WebElement cancelButton;
 
-    // New: Social sharing buttons
-    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Share') or contains(@class, 'share') or contains(@class, 'social')]")
+    // New: Social sharing buttons (links styled as buttons)
+    @FindBy(xpath = "//*[@id='app_root']//a[contains(@class, 'social-share') or contains(text(), 'Share') or contains(@href, 'facebook.com')] | //*[@id='app_root']//a[contains(@class, 'social-share') or contains(text(), 'Tweet') or contains(@href, 'twitter.com')]")
     private List<WebElement> shareButtons;
 
-    // New: Campaign-specific button
-    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Learn More') or contains(@class, 'learn-more')]")
+    // New: Other buttons
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Learn More') or contains(@class, 'learn-more')] | //*[@id='app_root']//a[contains(text(), 'Learn More')]")
     private WebElement learnMoreButton;
+
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Donate Now') or contains(@class, 'donate-now')] | //*[@id='app_root']//a[contains(text(), 'Donate Now')]")
+    private WebElement donateNowButton;
 
     public DonationPage(WebDriver driver) {
         this.driver = driver;
@@ -136,29 +146,37 @@ public class DonationPage {
                 case "50":
                     amountBtn = amount50Button;
                     break;
-                case "75":
-                    amountBtn = amount75Button;
-                    break;
                 case "100":
                     amountBtn = amount100Button;
                     break;
                 case "250":
                     amountBtn = amount250Button;
                     break;
+                case "500":
+                    amountBtn = amount500Button;
+                    break;
+                case "1000":
+                    amountBtn = amount1000Button;
+                    break;
+                case "2500":
+                    amountBtn = amount2500Button;
+                    break;
+                case "5000":
+                    amountBtn = amount5000Button;
+                    break;
                 default:
                     logger.info("Entering custom amount: {}", amount);
                     commanActions.isElementDisplayed(customAmountField);
                     customAmountField.clear();
                     customAmountField.sendKeys(amount);
-                    if (commanActions.isElementDisplayed(customAmountSubmitButton)) {
-                        commanActions.clickElement(customAmountSubmitButton);
-                    }
+                    // No separate submit; Continue handles it
                     return;
             }
             commanActions.clickElement(amountBtn);
         } catch (Exception e) {
             logger.warn("Unsupported amount: {}. Using default (50)", amount);
-            commanActions.clickElement(amount50Button);
+            amountBtn = amount50Button;
+            commanActions.clickElement(amountBtn);
         }
     }
 
@@ -217,7 +235,7 @@ public class DonationPage {
         }
     }
 
-    // New: Methods for additional buttons
+    // New: Methods for additional buttons (based on site analysis)
     public void clickContinue() {
         logger.info("Clicking Continue button");
         commanActions.clickElement(continueButton);
@@ -248,6 +266,11 @@ public class DonationPage {
         commanActions.clickElement(learnMoreButton);
     }
 
+    public void clickDonateNow() {
+        logger.info("Clicking Donate Now button");
+        commanActions.clickElement(donateNowButton);
+    }
+
     public boolean isPageStructureIntact() {
         logger.info("Checking if donation page structure is intact");
         try {
@@ -255,9 +278,12 @@ public class DonationPage {
                                commanActions.isElementDisplayed(monthlyOption) &&
                                commanActions.isElementDisplayed(amount25Button) &&
                                commanActions.isElementDisplayed(amount50Button) &&
-                               commanActions.isElementDisplayed(amount75Button) &&
                                commanActions.isElementDisplayed(amount100Button) &&
                                commanActions.isElementDisplayed(amount250Button) &&
+                               commanActions.isElementDisplayed(amount500Button) &&
+                               commanActions.isElementDisplayed(amount1000Button) &&
+                               commanActions.isElementDisplayed(amount2500Button) &&
+                               commanActions.isElementDisplayed(amount5000Button) &&
                                commanActions.isElementDisplayed(continueButton);
             logger.info("Page structure check: {}", isIntact ? "Intact" : "Not intact");
             return isIntact;
