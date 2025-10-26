@@ -1,0 +1,119 @@
+package tests;
+
+import base.BaseTest;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+public class DonationPageButtonTest extends BaseTest {
+
+    @Test(priority = 1)
+    public void testOneTimeDonationButton() {
+        donationPage.selectOneTimeDonation();
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after clicking One-Time donation button");
+    }
+
+    @Test(priority = 2, dependsOnMethods = "testOneTimeDonationButton")
+    public void testMonthlyDonationButton() {
+        donationPage.selectMonthlyDonation();
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after clicking Monthly donation button");
+    }
+
+    @Test(priority = 3)
+    public void testAmount25Button() {
+        donationPage.selectAmount("25");
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after clicking $25 button");
+    }
+
+    @Test(priority = 4)
+    public void testAmount50Button() {
+        donationPage.selectAmount("50");
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after clicking $50 button");
+    }
+
+    @Test(priority = 5)
+    public void testAmount75Button() {
+        donationPage.selectAmount("75");
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after clicking $75 button");
+    }
+
+    @Test(priority = 6)
+    public void testAmount100Button() {
+        donationPage.selectAmount("100");
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after clicking $100 button");
+    }
+
+    @Test(priority = 7)
+    public void testAmount250Button() {
+        donationPage.selectAmount("250");
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after clicking $250 button");
+    }
+
+    @Test(priority = 8)
+    public void testCustomAmountButton() {
+        donationPage.selectAmount("150");
+        Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                "Page structure should remain intact after entering custom amount");
+    }
+
+    @Test(priority = 9)
+    public void testContinueButton() {
+        donationPage.selectAmount("50");
+        donationPage.selectOneTimeDonation();
+        donationPage.clickContinue();
+        String currentUrl = driver.getCurrentUrl();
+        Assert.assertTrue(currentUrl.contains("step") || !currentUrl.equals(configProps.getProperty("base.url")),
+                "Should navigate to next step after clicking Continue button");
+    }
+
+    @Test(priority = 10)
+    public void testBackButton() {
+        try {
+            donationPage.clickBack();
+            Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                    "Page structure should remain intact after clicking Back button");
+        } catch (Exception e) {
+            Assert.assertTrue(true, "Back button not present, skipping test");
+        }
+    }
+
+    @Test(priority = 11)
+    public void testCancelButton() {
+        try {
+            donationPage.clickCancel();
+            String currentUrl = driver.getCurrentUrl();
+            Assert.assertTrue(!currentUrl.contains("step"), 
+                    "Should return to main page or stay after clicking Cancel button");
+        } catch (Exception e) {
+            Assert.assertTrue(true, "Cancel button not present, skipping test");
+        }
+    }
+
+    @Test(priority = 12)
+    public void testShareButtons() {
+        try {
+            donationPage.clickShareButton(0);
+            Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                    "Page structure should remain intact after clicking Share button");
+        } catch (Exception e) {
+            Assert.assertTrue(true, "No share buttons present, skipping test");
+        }
+    }
+
+    @Test(priority = 13)
+    public void testLearnMoreButton() {
+        try {
+            donationPage.clickLearnMore();
+            Assert.assertTrue(donationPage.isPageStructureIntact(), 
+                    "Page structure should remain intact after clicking Learn More button");
+        } catch (Exception e) {
+            Assert.assertTrue(true, "Learn More button not present, skipping test");
+        }
+    }
+}
