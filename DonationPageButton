@@ -13,7 +13,7 @@ public class DonationPageButtonTest extends BaseTest {
                 "Page structure should remain intact after clicking One-Time donation button");
     }
 
-    @Test(priority = 2, dependsOnMethods = "testOneTimeDonationButton")
+    @Test(priority = 2)
     public void testMonthlyDonationButton() {
         donationPage.selectMonthlyDonation();
         Assert.assertTrue(donationPage.isPageStructureIntact(), 
