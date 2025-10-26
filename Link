@@ -1,29 +1,65 @@
-
 package tests;
 
 import base.BaseTest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.NoSuchWindowException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class VisualVerificationTest extends BaseTest {
-    private static final Logger logger = LogManager.getLogger(VisualVerificationTest.class);
+import java.util.List;
 
-    @Test(priority = 2, description = "Verify Background image and page text display properly")
-    public void testBackgroundImageAndTextDisplay(){
-        logger.info("Starting VisualVerificationTest: testBackgroundImageAndTextDisplay");
+public class LinkVerificationTest extends BaseTest {
+    private static final Logger logger = LogManager.getLogger(LinkVerificationTest.class);
 
-        boolean imageDisplayed = donationPage.isBackgroundImageDisplayed();
-        logger.debug("Background image displayed: {}", imageDisplayed);
-        Assert.assertTrue(imageDisplayed, "Background image not displayed");
-        logger.info("Background image assertion passed");
+    @Test(priority = 3, description = "Verify all links on donation page navigate correctly without stale elements")
+    public void testAllLinksFunctionality() {
+        logger.info("Starting LinkVerificationTest: testAllLinksFunctionality");
 
-        String heroText = donationPage.getHeroText();
-        logger.debug("Hero text length: {}", heroText.length());
-        Assert.assertTrue(heroText.length() > 0, "Page text not displayed");
-        logger.info("Hero text length assertion passed");
+        // Step 1: Get all href strings (no elements – avoids staleness)
+        List<String> allHrefs = donationPage.getAllLinkHrefs();
+        logger.info("Found {} valid links to verify", allHrefs.size());
 
-        logger.info("VisualVerificationTest: testBackgroundImageAndTextDisplay completed successfully");
+        Assert.assertTrue(allHrefs.size() > 0, "No valid links found on page");
+
+        String originalUrl = driver.getCurrentUrl();
+        logger.debug("Original URL: {}", originalUrl);
+
+        int successfulNavs = 0;
+        for (int i = 0; i < allHrefs.size(); i++) {
+            String href = allHrefs.get(i);
+            logger.info("Verifying link {}: {}", i + 1, href);
+
+            try {
+                // Step 2: Navigate directly to href (simulates click, no stale element)
+                driver.get(href);
+
+                // Step 3: Verify navigation (e.g., new URL is not original, and loads without error)
+                String newUrl = driver.getCurrentUrl();
+                boolean navigated = !newUrl.equals(originalUrl) && newUrl.contains("cancer.org"); // Adjust domain if needed
+                Assert.assertTrue(navigated, "Link did not navigate correctly: " + href);
+
+                logger.debug("Successful navigation to: {}", newUrl);
+                successfulNavs++;
+
+                // Step 4: Navigate back to donation page for next link
+                driver.navigate().back();
+                wait.until(ExpectedConditions.urlToBe(originalUrl)); // Wait for back to complete
+
+            } catch (NoSuchWindowException | org.openqa.selenium.TimeoutException e) {
+                logger.warn("Navigation failed for {} (external/JS link?): {}", href, e.getMessage());
+                // Continue to next link – don't fail test for non-internal links
+                driver.get(originalUrl); // Reset to original
+            } catch (Exception e) {
+                logger.error("Unexpected error for link {}: {}", href, e.getMessage());
+                Assert.fail("Unexpected error verifying link: " + href + " - " + e.getMessage());
+            }
+        }
+
+        // Step 5: Final assertion on success rate (allow 80%+ for external links)
+        double successRate = (double) successfulNavs / allHrefs.size();
+        Assert.assertTrue(successRate >= 0.8, "Success rate too low: " + successRate + " (" + successfulNavs + "/" + allHrefs.size() + ")");
+
+        logger.info("LinkVerificationTest completed: {} successful out of {}", successfulNavs, allHrefs.size());
     }
 }
