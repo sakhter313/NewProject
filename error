@@ -1,4 +1,1 @@
-java.lang.AssertionError: Page structure should remain intact after clicking One-Time donation button
-Expected :true
-Actual   :false
-<Click to see difference>
+org.openqa.selenium.TimeoutException: Expected condition failed: waiting for element to be clickable: Proxy element for: DefaultElementLocator 'By.xpath: //button[contains(text(), 'One-Time')] | //button[contains(@class, 'one-time')]' (tried for 10 second(s) with 500 milliseconds interval)
