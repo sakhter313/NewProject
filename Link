@@ -4,21 +4,32 @@ import base.BaseTest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.NoSuchWindowException;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.time.Duration;
 import java.util.List;
 
 public class LinkVerificationTest extends BaseTest {
     private static final Logger logger = LogManager.getLogger(LinkVerificationTest.class);
+    private final WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-    @Test(priority = 3, description = "Verify all links on donation page navigate correctly without stale elements")
+    @Test(priority = 3, description = "Verify all links on donation page navigate correctly and print them")
     public void testAllLinksFunctionality() {
         logger.info("Starting LinkVerificationTest: testAllLinksFunctionality");
 
         // Step 1: Get all href strings (no elements – avoids staleness)
         List<String> allHrefs = donationPage.getAllLinkHrefs();
         logger.info("Found {} valid links to verify", allHrefs.size());
+
+        // NEW: Print all links to console/logs
+        logger.info("=== ALL LINKS FOUND ON DONATION PAGE ===");
+        for (int i = 0; i < allHrefs.size(); i++) {
+            logger.info("Link {}: {}", i + 1, allHrefs.get(i));
+        }
+        logger.info("=== END LINKS LIST ===");
 
         Assert.assertTrue(allHrefs.size() > 0, "No valid links found on page");
 
