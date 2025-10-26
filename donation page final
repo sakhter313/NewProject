@@ -12,7 +12,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import utils.CommanActions;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,17 +23,18 @@ public class DonationPage {
     private WebDriverWait wait;
     private CommanActions commanActions;
 
-    // === Page Elements ===
+    // === Page Elements (Robust text-based XPaths for buttons) ===
     @FindBy(xpath = "//*[@id='app_root']/div/div[1]/div/div[2]/div/p")
     private WebElement heroText;
 
     @FindBy(xpath = "//*[@id='svg_header_image']")
     private WebElement backgroundImage;
 
-    @FindBy(xpath = "//*[@id='app_root']/div/div[2]/div[3]/div[2]/button[1]")
+    // Robust: Use text content instead of index
+    @FindBy(xpath = "//button[contains(text(), 'One-Time')] | //button[contains(@class, 'one-time')]")
     private WebElement oneTimeOption;
 
-    @FindBy(xpath = "//*[@id='app_root']/div/div[2]/div[3]/div[2]/button[2]")
+    @FindBy(xpath = "//button[contains(text(), 'Monthly')] | //button[contains(@class, 'monthly')]")
     private WebElement monthlyOption;
 
     @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$25') or @value='25' or contains(@class, 'amount-25')]")
@@ -65,14 +65,14 @@ public class DonationPage {
     @FindBy(xpath = "//*[@id='app_root']//input[@type='number' or @id='amount' or contains(@class, 'custom-amount') or contains(@placeholder, 'Other')]")
     private WebElement customAmountField;
 
-    // Navigation buttons
-    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Continue') or contains(text(), 'Next') or contains(@class, 'continue') or @type='submit']")
+    // Navigation buttons (robust)
+    @FindBy(xpath = "//button[contains(text(), 'Continue') or contains(text(), 'Next') or contains(@class, 'continue') or @type='submit']")
     private WebElement continueButton;
 
-    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Back') or contains(@class, 'back')]")
+    @FindBy(xpath = "//button[contains(text(), 'Back') or contains(@class, 'back')]")
     private WebElement backButton;
 
-    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Cancel') or contains(@class, 'cancel')]")
+    @FindBy(xpath = "//button[contains(text(), 'Cancel') or contains(@class, 'cancel')]")
     private WebElement cancelButton;
 
     // Social sharing
@@ -126,15 +126,15 @@ public class DonationPage {
     public void selectOneTimeDonation() {
         logger.info("Selecting one-time donation option");
         commanActions.clickElement(oneTimeOption);
-        // Wait for page to stabilize after click (no navigation or reload)
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id='app_root']")));
+        // Wait for JS toggle to complete (stabilize structure)
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//button[contains(text(), 'Monthly')]")));
     }
 
     public void selectMonthlyDonation() {
         logger.info("Selecting monthly donation option");
         commanActions.clickElement(monthlyOption);
-        // Wait for page to stabilize after click (no navigation or reload)
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id='app_root']")));
+        // Wait for JS toggle to complete (stabilize structure)
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//button[contains(text(), 'One-Time')]")));
     }
 
     public void selectAmount(String amount) {
@@ -171,33 +171,15 @@ public class DonationPage {
                     enterCustomAmount(amount);  // Delegate to new method
                     return;
             }
-            // Deselect all other amount buttons before selecting this one (ensures single selection)
+            // Deselect all other amount buttons before selecting this one
             deselectAllAmountButtons();
             commanActions.clickElement(amountBtn);
-            // Wait for this button to be selected
+            // Verify only this button is selected
             wait.until(ExpectedConditions.attributeContains(amountBtn, "class", "selected"));
         } catch (Exception e) {
             logger.warn("Unsupported amount: {}. Falling back to $50", amount);
             deselectAllAmountButtons();
             commanActions.clickElement(amount50Button);
-        }
-    }
-
-    // New method to deselect all amount buttons (ensures single selection for both modes)
-    private void deselectAllAmountButtons() {
-        List<WebElement> allAmountButtons = Arrays.asList(
-            amount25Button, amount50Button, amount100Button, amount250Button,
-            amount500Button, amount1000Button, amount2500Button, amount5000Button
-        );
-        for (WebElement btn : allAmountButtons) {
-            try {
-                if (commanActions.isElementDisplayed(btn) && btn.getAttribute("class").contains("selected")) {
-                    btn.click(); // Click to deselect if selected
-                    wait.until(ExpectedConditions.not(ExpectedConditions.attributeContains(btn, "class", "selected")));
-                }
-            } catch (Exception ignored) {
-                // Ignore if button not present or not clickable
-            }
         }
     }
 
@@ -281,17 +263,34 @@ public class DonationPage {
         }
     }
 
+    // Deselect all amount buttons (ensures single selection across modes)
+    private void deselectAllAmountButtons() {
+        List<WebElement> allAmountButtons = Arrays.asList(
+            amount25Button, amount50Button, amount100Button, amount250Button,
+            amount500Button, amount1000Button, amount2500Button, amount5000Button
+        );
+        for (WebElement btn : allAmountButtons) {
+            try {
+                if (commanActions.isElementDisplayed(btn) && btn.getAttribute("class").contains("selected")) {
+                    btn.click(); // Click to deselect
+                }
+            } catch (Exception ignored) {
+                // Ignore if not clickable
+            }
+        }
+    }
+
     public boolean isPageStructureIntact() {
-        logger.info("Checking if donation page structure is intact (DOM presence only)");
+        logger.info("Checking if donation page structure is intact (robust check)");
 
         try {
-            // Check existence in DOM (not visibility) for core elements - structure remains if elements are present
-            boolean oneTimePresent = driver.findElements(By.xpath("//*[@id='app_root']/div/div[2]/div[3]/div[2]/button[1]")).size() > 0;
-            boolean monthlyPresent = driver.findElements(By.xpath("//*[@id='app_root']/div/div[2]/div[3]/div[2]/button[2]")).size() > 0;
-            boolean continuePresent = driver.findElements(By.xpath("//*[@id='app_root']//button[contains(text(), 'Continue') or contains(text(), 'Next') or contains(@class, 'continue') or @type='submit']")).size() > 0;
+            // Use robust text-based locators for presence/enabled state
+            boolean oneTimeOk = oneTimeOption != null && oneTimeOption.isEnabled();
+            boolean monthlyOk = monthlyOption != null && monthlyOption.isEnabled();
+            boolean continueOk = continueButton != null && continueButton.isEnabled();
 
-            boolean result = oneTimePresent && monthlyPresent && continuePresent;
-            logger.info("Page structure check (DOM presence): {}", result ? "Intact" : "Broken");
+            boolean result = oneTimeOk && monthlyOk && continueOk;
+            logger.info("Page structure check: One-Time={}, Monthly={}, Continue={}", oneTimeOk, monthlyOk, continueOk);
             return result;
 
         } catch (Exception e) {
@@ -300,7 +299,21 @@ public class DonationPage {
         }
     }
 
-    // Helper methods to detect current mode (kept for potential future use)
+    // Helper to verify only one amount is selected
+    public boolean isOnlyOneAmountSelected() {
+        List<WebElement> allAmountButtons = Arrays.asList(
+            amount25Button, amount50Button, amount100Button, amount250Button,
+            amount500Button, amount1000Button, amount2500Button, amount5000Button
+        );
+        long selectedCount = allAmountButtons.stream()
+                .filter(btn -> btn != null && commanActions.isElementDisplayed(btn) && btn.getAttribute("class").contains("selected"))
+                .count();
+        boolean singleSelected = selectedCount == 1;
+        logger.info("Selected amounts count: {}", selectedCount);
+        return singleSelected;
+    }
+
+    // Helper methods to detect current mode
     private boolean isOneTimeSelected() {
         try {
             String classAttr = oneTimeOption.getAttribute("class");
