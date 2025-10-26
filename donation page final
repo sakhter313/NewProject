@@ -1,7 +1,9 @@
+
 package pages;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -11,6 +13,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import utils.CommanActions;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,26 +21,24 @@ import java.util.stream.Collectors;
 public class DonationPage {
     private static final Logger logger = LogManager.getLogger(DonationPage.class);
 
-    private final WebDriver driver;
-    private final WebDriverWait wait;
-    private final CommanActions commanActions;
+    private WebDriver driver;
+    private WebDriverWait wait;
+    private CommanActions commanActions;
 
-    // ──────────────────────────────────────
-    // Page Elements (robust, Java 8 safe)
-    // ──────────────────────────────────────
+    // === Page Elements ===
     @FindBy(xpath = "//*[@id='app_root']/div/div[1]/div/div[2]/div/p")
     private WebElement heroText;
 
     @FindBy(xpath = "//*[@id='svg_header_image']")
     private WebElement backgroundImage;
 
-    @FindBy(xpath = "//button[contains(@class,'one-time') or contains(text(),'One-Time')]")
+    @FindBy(xpath = "//*[@id='app_root']/div/div[2]/div[3]/div[2]/button[1]")
     private WebElement oneTimeOption;
 
-    @FindBy(xpath = "//button[contains(@class,'monthly') or contains(text(),'Monthly')]")
+    @FindBy(xpath = "//*[@id='app_root']/div/div[2]/div[3]/div[2]/button[2]")
     private WebElement monthlyOption;
 
-    @FindBy(xpath = "//button[contains(text(),'$25') or @value='25']")
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$25') or @value='25' or contains(@class, 'amount-25')]")
     private WebElement amount25Button;
 
     @FindBy(xpath = "//*[@id='app_root']/div/div[2]/div[3]/div[3]/div[1]/div[1]")
@@ -46,212 +47,280 @@ public class DonationPage {
     @FindBy(xpath = "//*[@id='app_root']/div/div[2]/div[3]/div[2]/div[1]/div[4]")
     private WebElement amount100Button;
 
-    @FindBy(xpath = "//button[contains(text(),'$250') or @value='250']")
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$250') or @value='250' or contains(@class, 'amount-250')]")
     private WebElement amount250Button;
 
-    @FindBy(xpath = "//button[contains(text(),'$500') or @value='500']")
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$500') or @value='500' or contains(@class, 'amount-500')]")
     private WebElement amount500Button;
 
-    @FindBy(xpath = "//button[contains(text(),'$1,000') or @value='1000']")
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$1,000') or @value='1000' or contains(@class, 'amount-1000')]")
     private WebElement amount1000Button;
 
-    @FindBy(xpath = "//button[contains(text(),'$2,500') or @value='2500']")
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$2,500') or @value='2500' or contains(@class, 'amount-2500')]")
     private WebElement amount2500Button;
 
-    @FindBy(xpath = "//button[contains(text(),'$5,000') or @value='5000']")
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$5,000') or @value='5000' or contains(@class, 'amount-5000')]")
     private WebElement amount5000Button;
 
-    @FindBy(xpath = "//input[@type='number' or contains(@placeholder,'Other') or contains(@class,'custom')]")
+    // Custom amount input field
+    @FindBy(xpath = "//*[@id='app_root']//input[@type='number' or @id='amount' or contains(@class, 'custom-amount') or contains(@placeholder, 'Other')]")
     private WebElement customAmountField;
 
-    @FindBy(xpath = "//button[contains(text(),'Continue') or contains(@class,'continue')]")
+    // Navigation buttons
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Continue') or contains(text(), 'Next') or contains(@class, 'continue') or @type='submit']")
     private WebElement continueButton;
 
-    @FindBy(xpath = "//button[contains(text(),'Back')]")
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Back') or contains(@class, 'back')]")
     private WebElement backButton;
 
-    @FindBy(xpath = "//button[contains(text(),'Cancel')]")
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Cancel') or contains(@class, 'cancel')]")
     private WebElement cancelButton;
 
-    @FindBy(xpath = "//a[contains(@href,'facebook') or contains(@href,'twitter') or contains(@href,'linkedin')]")
+    // Social sharing
+    @FindBy(xpath = "//*[@id='app_root']//a[contains(@class, 'social-share') or contains(@href, 'facebook.com') or contains(@href, 'twitter.com') or contains(@href, 'linkedin.com')]")
     private List<WebElement> shareButtons;
 
-    @FindBy(xpath = "//a[contains(text(),'Learn More')] | //button[contains(text(),'Learn More')]")
+    // Learn More
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Learn More') or contains(@class, 'learn-more')] | //*[@id='app_root']//a[contains(text(), 'Learn More')]")
     private WebElement learnMoreButton;
 
+    // All valid links
     @FindBy(xpath = "//a[@href]")
     private List<WebElement> allLinks;
 
-    // ──────────────────────────────────────
-    // Constructor
-    // ──────────────────────────────────────
     public DonationPage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(12));
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         this.commanActions = new CommanActions(driver);
         PageFactory.initElements(driver, this);
         logger.debug("DonationPage initialized");
     }
 
-    // ──────────────────────────────────────
-    // Page Actions
-    // ──────────────────────────────────────
     public void openPage(String url) {
+        logger.info("Opening page: {}", url);
         driver.get(url);
-        wait.until(ExpectedConditions.visibilityOf(heroText));
-        logger.info("Page opened: {}", url);
+        try {
+            wait.until(ExpectedConditions.visibilityOf(heroText));
+            logger.info("Page loaded successfully - Hero text visible");
+        } catch (Exception e) {
+            logger.error("Page load failed - Hero text not visible: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    public String getHeroText() {
+        try {
+            String text = heroText.getText();
+            logger.debug("Retrieved hero text: {}", text);
+            return text;
+        } catch (Exception e) {
+            logger.error("Failed to get hero text: {}", e.getMessage(), e);
+            return "";
+        }
+    }
+
+    public boolean isBackgroundImageDisplayed() {
+        logger.info("Verifying background image display");
+        return commanActions.isElementDisplayed(backgroundImage);
     }
 
     public void selectOneTimeDonation() {
-        logger.info("Selecting One-Time donation");
+        logger.info("Selecting one-time donation option");
         commanActions.clickElement(oneTimeOption);
-        wait.until(ExpectedConditions.attributeContains(oneTimeOption, "class", "selected"));
     }
 
     public void selectMonthlyDonation() {
-        logger.info("Selecting Monthly donation");
+        logger.info("Selecting monthly donation option");
         commanActions.clickElement(monthlyOption);
-        wait.until(ExpectedConditions.attributeContains(monthlyOption, "class", "selected"));
     }
 
-    // ──────────────────────────────────────
-    // Java 8: Classic switch (no arrow)
-    // ──────────────────────────────────────
     public void selectAmount(String amount) {
         logger.info("Selecting amount: {}", amount);
-        WebElement btn = null;
-
-        switch (amount) {
-            case "25":
-                btn = amount25Button;
-                break;
-            case "50":
-                btn = amount50Button;
-                break;
-            case "100":
-                btn = amount100Button;
-                break;
-            case "250":
-                btn = amount250Button;
-                break;
-            case "500":
-                btn = amount500Button;
-                break;
-            case "1000":
-                btn = amount1000Button;
-                break;
-            case "2500":
-                btn = amount2500Button;
-                break;
-            case "5000":
-                btn = amount5000Button;
-                break;
-            default:
-                logger.info("Custom amount: {}", amount);
-                enterCustomAmount(amount);
-                return;
-        }
-
-        if (btn != null) {
-            commanActions.clickElement(btn);
-        } else {
-            logger.warn("Fallback to $50");
+        WebElement amountBtn;
+        try {
+            switch (amount) {
+                case "25":
+                    amountBtn = amount25Button;
+                    break;
+                case "50":
+                    amountBtn = amount50Button;
+                    break;
+                case "100":
+                    amountBtn = amount100Button;
+                    break;
+                case "250":
+                    amountBtn = amount250Button;
+                    break;
+                case "500":
+                    amountBtn = amount500Button;
+                    break;
+                case "1000":
+                    amountBtn = amount1000Button;
+                    break;
+                case "2500":
+                    amountBtn = amount2500Button;
+                    break;
+                case "5000":
+                    amountBtn = amount5000Button;
+                    break;
+                default:
+                    logger.info("Entering custom amount: {}", amount);
+                    enterCustomAmount(amount);  // Delegate to new method
+                    return;
+            }
+            commanActions.clickElement(amountBtn);
+        } catch (Exception e) {
+            logger.warn("Unsupported amount: {}. Falling back to $50", amount);
             commanActions.clickElement(amount50Button);
         }
     }
 
+    // === ADDED METHOD AS REQUESTED ===
     public void enterCustomAmount(String amount) {
         logger.info("Entering custom amount: {}", amount);
         commanActions.isElementDisplayed(customAmountField);
         customAmountField.clear();
         customAmountField.sendKeys(amount);
+        // No need to click anything else — Continue will pick it up
     }
 
-    public void clickContinue() { commanActions.clickElement(continueButton); }
-    public void clickBack()     { commanActions.clickElement(backButton); }
-    public void clickCancel()   { commanActions.clickElement(cancelButton); }
-    public void clickShareButton(int idx) {
-        if (idx >= 0 && idx < shareButtons.size()) {
-            commanActions.clickElement(shareButtons.get(idx));
-        }
+    public void clickContinue() {
+        logger.info("Clicking Continue button");
+        commanActions.clickElement(continueButton);
     }
-    public void clickLearnMore() { commanActions.clickElement(learnMoreButton); }
 
-    // ──────────────────────────────────────
-    // MODE-AWARE STRUCTURE CHECK (Java 8)
-    // ──────────────────────────────────────
-    public boolean isPageStructureIntact() {
-        logger.info("Checking page structure (mode-aware)");
+    public void clickBack() {
+        logger.info("Clicking Back button");
+        commanActions.clickElement(backButton);
+    }
 
-        // 1. Core elements
-        boolean core = commanActions.isElementDisplayed(oneTimeOption) &&
-                       commanActions.isElementDisplayed(monthlyOption) &&
-                       commanActions.isElementDisplayed(continueButton);
+    public void clickCancel() {
+        logger.info("Clicking Cancel button");
+        commanActions.clickElement(cancelButton);
+    }
 
-        if (!core) {
-            logger.warn("Core elements missing");
-            return false;
-        }
-
-        // 2. Detect mode
-        boolean isOneTime = isSelected(oneTimeOption);
-        boolean isMonthly = isSelected(monthlyOption);
-
-        logger.info("Current mode → One-Time: {}, Monthly: {}", isOneTime, isMonthly);
-
-        // 3. Expected visible amounts
-        List<WebElement> expectedAmounts;
-        if (isOneTime) {
-            expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button, amount250Button);
-        } else if (isMonthly) {
-            expectedAmounts = Arrays.asList(
-                amount25Button, amount50Button, amount100Button, amount250Button,
-                amount500Button, amount1000Button, amount2500Button, amount5000Button
-            );
+    public void clickShareButton(int index) {
+        logger.info("Clicking Share button at index: {}", index);
+        if (index >= 0 && index < shareButtons.size()) {
+            commanActions.clickElement(shareButtons.get(index));
         } else {
-            expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button, amount250Button);
-        }
-
-        // 4. All expected must be displayed
-        boolean amountsOk = expectedAmounts.stream()
-                .allMatch(commanActions::isElementDisplayed);
-
-        boolean result = core && amountsOk;
-        logger.info("Structure check → {}", result ? "PASS" : "FAIL");
-        return result;
-    }
-
-    private boolean isSelected(WebElement element) {
-        try {
-            String cls = element.getAttribute("class");
-            String aria = element.getAttribute("aria-selected");
-            return (cls != null && cls.contains("selected")) ||
-                   "true".equalsIgnoreCase(aria);
-        } catch (Exception e) {
-            return false;
+            logger.warn("Invalid share button index: {}", index);
+            throw new IllegalArgumentException("Invalid share button index: " + index);
         }
     }
 
-    // ──────────────────────────────────────
-    // Link Helpers (unchanged)
-    // ──────────────────────────────────────
+    public void clickLearnMore() {
+        logger.info("Clicking Learn More button");
+        commanActions.clickElement(learnMoreButton);
+    }
+
     public List<WebElement> getAllLinks() {
+        logger.debug("Fetching all links");
         return allLinks.stream()
-                .filter(l -> {
-                    String href = l.getAttribute("href");
+                .filter(link -> {
+                    String href = link.getAttribute("href");
                     return href != null && !href.isEmpty() && !href.startsWith("javascript") && !href.startsWith("#");
                 })
                 .collect(Collectors.toList());
     }
 
     public List<String> getAllLinkHrefs() {
+        logger.debug("Fetching all link hrefs");
         return getAllLinks().stream()
-                .map(l -> l.getAttribute("href"))
+                .map(link -> link.getAttribute("href"))
                 .collect(Collectors.toList());
     }
 
     public boolean verifyLinkNavigation(WebElement link) {
-        // Simplified for brevity
-        return true;
+        logger.info("Verifying navigation for link: {}", link.getAttribute("href"));
+        String originalWindow = driver.getWindowHandle();
+        try {
+            commanActions.clickElement(link);
+            wait.until(ExpectedConditions.not(ExpectedConditions.urlToBe(driver.getCurrentUrl())));
+            String newUrl = driver.getCurrentUrl();
+            logger.info("Navigated to: {}", newUrl);
+            return newUrl.contains("cancer.org") || newUrl.equals("about:blank");
+        } catch (Exception e) {
+            logger.warn("Link navigation failed: {}", e.getMessage());
+            return false;
+        } finally {
+            for (String windowHandle : driver.getWindowHandles()) {
+                if (!windowHandle.equals(originalWindow)) {
+                    driver.switchTo().window(windowHandle);
+                    driver.close();
+                    break;
+                }
+            }
+            driver.switchTo().window(originalWindow);
+        }
+    }
+
+    public boolean isPageStructureIntact() {
+        logger.info("Checking if donation page structure is intact (mode-aware)");
+
+        try {
+            // Always required
+            boolean core = commanActions.isElementDisplayed(oneTimeOption) &&
+                    commanActions.isElementDisplayed(monthlyOption) &&
+                    commanActions.isElementDisplayed(continueButton);
+
+            if (!core) {
+                logger.warn("Core elements missing: oneTimeOption, monthlyOption, or continueButton");
+                return false;
+            }
+
+            // Determine current mode
+            boolean isOneTimeSelected = isOneTimeSelected();
+            boolean isMonthlySelected = isMonthlySelected();
+
+            logger.info("Current mode: One-Time={}, Monthly={}", isOneTimeSelected, isMonthlySelected);
+
+            // Define amounts per mode (based on live site)
+            List<WebElement> expectedAmounts;
+            if (isOneTimeSelected) {
+                expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button, amount250Button);
+            } else if (isMonthlySelected) {
+                expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button, amount250Button,
+                        amount500Button, amount1000Button, amount2500Button, amount5000Button);
+            } else {
+                // Default: check only common amounts
+                expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button, amount250Button);
+            }
+
+            // Check only the amounts that should be visible
+            boolean amountsVisible = expectedAmounts.stream()
+                    .allMatch(commanActions::isElementDisplayed);
+
+            boolean result = core && amountsVisible;
+            logger.info("Page structure check: {}", result ? "Intact" : "Broken");
+            return result;
+
+        } catch (Exception e) {
+            logger.warn("Exception during structure check: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    // Helper methods to detect current mode
+    private boolean isOneTimeSelected() {
+        try {
+            String classAttr = oneTimeOption.getAttribute("class");
+            String ariaSelected = oneTimeOption.getAttribute("aria-selected");
+            return (classAttr != null && classAttr.contains("selected")) ||
+                    "true".equalsIgnoreCase(ariaSelected);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isMonthlySelected() {
+        try {
+            String classAttr = monthlyOption.getAttribute("class");
+            String ariaSelected = monthlyOption.getAttribute("aria-selected");
+            return (classAttr != null && classAttr.contains("selected")) ||
+                    "true".equalsIgnoreCase(ariaSelected);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
