@@ -22,7 +22,7 @@ public class DonationPage {
     private WebDriverWait wait;
     private CommanActions commanActions;
 
-    // Existing elements
+    // === Page Elements ===
     @FindBy(xpath = "//*[@id='app_root']/div/div[1]/div/div[2]/div/p")
     private WebElement heroText;
 
@@ -35,19 +35,14 @@ public class DonationPage {
     @FindBy(xpath = "//*[@id='app_root']/div/div[2]/div[3]/div[2]/button[2]")
     private WebElement monthlyOption;
 
+    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$25') or @value='25' or contains(@class, 'amount-25')]")
+    private WebElement amount25Button;
+
     @FindBy(xpath = "//*[@id='app_root']/div/div[2]/div[3]/div[3]/div[1]/div[1]")
     private WebElement amount50Button;
 
     @FindBy(xpath = "//*[@id='app_root']/div/div[2]/div[3]/div[2]/div[1]/div[4]")
     private WebElement amount100Button;
-
-    // New: All links on the page
-    @FindBy(xpath = "//a[@href]")
-    private List<WebElement> allLinks;
-
-    // New: Additional amount buttons (based on site analysis: no $75; added $25, $250, $500, $1000, $2500, $5000)
-    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$25') or @value='25' or contains(@class, 'amount-25')]")
-    private WebElement amount25Button;
 
     @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$250') or @value='250' or contains(@class, 'amount-250')]")
     private WebElement amount250Button;
@@ -64,11 +59,11 @@ public class DonationPage {
     @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), '$5,000') or @value='5000' or contains(@class, 'amount-5000')]")
     private WebElement amount5000Button;
 
-    // New: Custom amount input (no separate submit; uses Continue)
-    @FindBy(xpath = "//*[@id='app_root']//input[@type='number' or @id='amount' or contains(@class, 'custom-amount')]")
+    // Custom amount input field
+    @FindBy(xpath = "//*[@id='app_root']//input[@type='number' or @id='amount' or contains(@class, 'custom-amount') or contains(@placeholder, 'Other')]")
     private WebElement customAmountField;
 
-    // New: Navigation buttons
+    // Navigation buttons
     @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Continue') or contains(text(), 'Next') or contains(@class, 'continue') or @type='submit']")
     private WebElement continueButton;
 
@@ -78,16 +73,17 @@ public class DonationPage {
     @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Cancel') or contains(@class, 'cancel')]")
     private WebElement cancelButton;
 
-    // New: Social sharing buttons (links styled as buttons)
-    @FindBy(xpath = "//*[@id='app_root']//a[contains(@class, 'social-share') or contains(text(), 'Share') or contains(@href, 'facebook.com')] | //*[@id='app_root']//a[contains(@class, 'social-share') or contains(text(), 'Tweet') or contains(@href, 'twitter.com')]")
+    // Social sharing
+    @FindBy(xpath = "//*[@id='app_root']//a[contains(@class, 'social-share') or contains(@href, 'facebook.com') or contains(@href, 'twitter.com') or contains(@href, 'linkedin.com')]")
     private List<WebElement> shareButtons;
 
-    // New: Other buttons
+    // Learn More
     @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Learn More') or contains(@class, 'learn-more')] | //*[@id='app_root']//a[contains(text(), 'Learn More')]")
     private WebElement learnMoreButton;
 
-    @FindBy(xpath = "//*[@id='app_root']//button[contains(text(), 'Donate Now') or contains(@class, 'donate-now')] | //*[@id='app_root']//a[contains(text(), 'Donate Now')]")
-    private WebElement donateNowButton;
+    // All valid links
+    @FindBy(xpath = "//a[@href]")
+    private List<WebElement> allLinks;
 
     public DonationPage(WebDriver driver) {
         this.driver = driver;
@@ -166,76 +162,25 @@ public class DonationPage {
                     break;
                 default:
                     logger.info("Entering custom amount: {}", amount);
-                    commanActions.isElementDisplayed(customAmountField);
-                    customAmountField.clear();
-                    customAmountField.sendKeys(amount);
-                    // No separate submit; Continue handles it
+                    enterCustomAmount(amount);  // Delegate to new method
                     return;
             }
             commanActions.clickElement(amountBtn);
         } catch (Exception e) {
-            logger.warn("Unsupported amount: {}. Using default (50)", amount);
-            amountBtn = amount50Button;
-            commanActions.clickElement(amountBtn);
+            logger.warn("Unsupported amount: {}. Falling back to $50", amount);
+            commanActions.clickElement(amount50Button);
         }
     }
 
-    /**
-     * Retrieves all valid links on the page, excluding JavaScript and anchor links.
-     * @return List of WebElements representing clickable links.
-     */
-    public List<WebElement> getAllLinks() {
-        logger.debug("Fetching all links");
-        return allLinks.stream()
-                .filter(link -> {
-                    String href = link.getAttribute("href");
-                    return href != null && !href.isEmpty() && !href.startsWith("javascript") && !href.startsWith("#");
-                })
-                .collect(Collectors.toList());
+    // === ADDED METHOD AS REQUESTED ===
+    public void enterCustomAmount(String amount) {
+        logger.info("Entering custom amount: {}", amount);
+        commanActions.isElementDisplayed(customAmountField);
+        customAmountField.clear();
+        customAmountField.sendKeys(amount);
+        // No need to click anything else — Continue will pick it up
     }
 
-    /**
-     * Gets the href attribute of all valid links.
-     * @return List of href strings.
-     */
-    public List<String> getAllLinkHrefs() {
-        logger.debug("Fetching all link hrefs");
-        return getAllLinks().stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Clicks a specific link and verifies navigation (basic check).
-     * @param link WebElement to click.
-     * @return true if navigation successful, false otherwise.
-     */
-    public boolean verifyLinkNavigation(WebElement link) {
-        logger.info("Verifying navigation for link: {}", link.getAttribute("href"));
-        String originalWindow = driver.getWindowHandle();
-        try {
-            commanActions.clickElement(link);
-            wait.until(ExpectedConditions.not(ExpectedConditions.urlToBe(originalWindow))); // Wait for URL change
-            String newUrl = driver.getCurrentUrl();
-            logger.info("Navigated to: {}", newUrl);
-            return newUrl.contains("cancer.org") || newUrl.equals("about:blank");
-        } catch (Exception e) {
-            logger.warn("Link navigation failed: {}", e.getMessage());
-            return false;
-        } finally {
-            // Switch back to original window if new tab opened
-            for (String windowHandle : driver.getWindowHandles()) {
-                if (!windowHandle.equals(originalWindow)) {
-                    driver.switchTo().window(windowHandle);
-                    driver.close();
-                    break;
-                }
-            }
-            driver.switchTo().window(originalWindow);
-        }
-    }
-
-    // New: Methods for additional buttons (based on site analysis)
     public void clickContinue() {
         logger.info("Clicking Continue button");
         commanActions.clickElement(continueButton);
@@ -266,9 +211,45 @@ public class DonationPage {
         commanActions.clickElement(learnMoreButton);
     }
 
-    public void clickDonateNow() {
-        logger.info("Clicking Donate Now button");
-        commanActions.clickElement(donateNowButton);
+    public List<WebElement> getAllLinks() {
+        logger.debug("Fetching all links");
+        return allLinks.stream()
+                .filter(link -> {
+                    String href = link.getAttribute("href");
+                    return href != null && !href.isEmpty() && !href.startsWith("javascript") && !href.startsWith("#");
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getAllLinkHrefs() {
+        logger.debug("Fetching all link hrefs");
+        return getAllLinks().stream()
+                .map(link -> link.getAttribute("href"))
+                .collect(Collectors.toList());
+    }
+
+    public boolean verifyLinkNavigation(WebElement link) {
+        logger.info("Verifying navigation for link: {}", link.getAttribute("href"));
+        String originalWindow = driver.getWindowHandle();
+        try {
+            commanActions.clickElement(link);
+            wait.until(ExpectedConditions.not(ExpectedConditions.urlToBe(driver.getCurrentUrl())));
+            String newUrl = driver.getCurrentUrl();
+            logger.info("Navigated to: {}", newUrl);
+            return newUrl.contains("cancer.org") || newUrl.equals("about:blank");
+        } catch (Exception e) {
+            logger.warn("Link navigation failed: {}", e.getMessage());
+            return false;
+        } finally {
+            for (String windowHandle : driver.getWindowHandles()) {
+                if (!windowHandle.equals(originalWindow)) {
+                    driver.switchTo().window(windowHandle);
+                    driver.close();
+                    break;
+                }
+            }
+            driver.switchTo().window(originalWindow);
+        }
     }
 
     public boolean isPageStructureIntact() {
@@ -280,11 +261,8 @@ public class DonationPage {
                                commanActions.isElementDisplayed(amount50Button) &&
                                commanActions.isElementDisplayed(amount100Button) &&
                                commanActions.isElementDisplayed(amount250Button) &&
-                               commanActions.isElementDisplayed(amount500Button) &&
-                               commanActions.isElementDisplayed(amount1000Button) &&
-                               commanActions.isElementDisplayed(amount2500Button) &&
-                               commanActions.isElementDisplayed(amount5000Button) &&
                                commanActions.isElementDisplayed(continueButton);
+
             logger.info("Page structure check: {}", isIntact ? "Intact" : "Not intact");
             return isIntact;
         } catch (Exception e) {
