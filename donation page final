@@ -276,13 +276,11 @@ public class DonationPage {
 
             // Define amounts per mode (based on live site)
             List<WebElement> expectedAmounts;
-            if (isOneTimeSelected) {
-                expectedAmounts = Arrays.asList(amount50Button, amount100Button, amount250Button, amount500Button);
-            } else if (isMonthlySelected) {
-                expectedAmounts = Arrays.asList(amount50Button, amount100Button, amount250Button, amount500Button);
+            if (isOneTimeSelected || isMonthlySelected) {
+                expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button);
             } else {
                 // Default: check only common amounts
-                expectedAmounts = Arrays.asList(amount50Button, amount100Button, amount250Button, amount500Button);
+                expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button);
             }
 
             // Check only the amounts that should be visible
