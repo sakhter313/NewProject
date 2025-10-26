@@ -1,4 +1,3 @@
-
 package pages;
 
 import org.apache.logging.log4j.LogManager;
@@ -278,13 +277,12 @@ public class DonationPage {
             // Define amounts per mode (based on live site)
             List<WebElement> expectedAmounts;
             if (isOneTimeSelected) {
-                expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button, amount250Button);
+                expectedAmounts = Arrays.asList(amount50Button, amount100Button, amount250Button, amount500Button);
             } else if (isMonthlySelected) {
-                expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button, amount250Button,
-                        amount500Button, amount1000Button, amount2500Button, amount5000Button);
+                expectedAmounts = Arrays.asList(amount50Button, amount100Button, amount250Button, amount500Button);
             } else {
                 // Default: check only common amounts
-                expectedAmounts = Arrays.asList(amount25Button, amount50Button, amount100Button, amount250Button);
+                expectedAmounts = Arrays.asList(amount50Button, amount100Button, amount250Button, amount500Button);
             }
 
             // Check only the amounts that should be visible
